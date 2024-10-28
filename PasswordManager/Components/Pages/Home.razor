@@ -1,0 +1,127 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@attribute [StreamRendering]
+@inject PasswordStoreRepository PasswordStoreRepository
+
+<PageTitle>Home</PageTitle>
+
+<h1>Passwords</h1>
+
+<div class="d-flex justify-content-end align-items-center mb-3">
+    <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#Modal1">Add Password</button>
+</div>
+
+@if (!_passwords.Any())
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Username</th>
+                <th>Password</th>
+                <th>Created Date</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var model in _passwords)
+            {
+                <tr>
+                    <td>
+                        @model.Name
+                    </td>
+                    <td>
+                        @model.Username
+                    </td>
+                    <td>
+                        @model.Password
+                    </td>
+                    <td class="align-content-center">
+                        @model.CreatedDate.ToShortDateString()
+                    </td>
+                    <td class="align-content-center">
+                        <div class="d-flex align-items-center">
+                            <button type="button" class="btn btn-dark btn-sm px-3 me-3" data-bs-toggle="modal" data-bs-target="#@($"store-modal{model.Id}")">Edit</button>
+                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#@($"delete{model.Id}")">Delete</button>
+                        </div>
+                        <ConfirmationModal ModalId="@($"delete{model.Id}")" Model="model.Id" OnConfirmationCallback="DeletePassword"/>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
+
+<PasswordModal ModalId="Modal1" Title="Add New Password" Model="_newPassword" OnSave="SavePasswordHandle" @ref="_passwordModalRef"/>
+
+@foreach (var password in _passwords)
+{
+    <PasswordModal
+        Title="Edit Password"
+        Model="password"
+        OnSave="SavePasswordHandle"
+        ModalId="@($"store-modal{password.Id}")"
+    />
+}
+
+@code {
+
+    [Inject] public ILogger<Home> Logger { get; set; } = default!;
+
+    private IEnumerable<PasswordStoreModel> _passwords = [];
+    private PasswordModal _passwordModalRef = default!;
+    private PasswordStoreModel _newPassword = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshPasswords();
+    }
+
+    private async Task OpenModal()
+    {
+        Logger.LogInformation("Open Modal");
+        await _passwordModalRef!.ShowModal();
+    }
+
+    private async Task EditPassword(PasswordStoreModel model)
+    {
+        _passwordModalRef.UpdateParameter(model, "Edit Password");
+        await _passwordModalRef.ShowModal();
+        StateHasChanged();
+    }
+
+    private async Task SavePasswordHandle(PasswordStoreModel model)
+    {
+        Logger.LogInformation($"Name: {model.Name}; Username: {model.Username}; Password: {model.Password}");
+        if (_passwords.Any(x => x.Id == model.Id))
+        {
+            await PasswordStoreRepository.Update(model);
+        }
+        else
+        {
+            await PasswordStoreRepository.Add(_newPassword);
+            _newPassword = new PasswordStoreModel();
+        }
+        await RefreshPasswords();
+    }
+
+    private async Task DeletePassword(int id)
+    {
+        await PasswordStoreRepository.Delete(id);
+        await RefreshPasswords();
+    }
+    
+    private async Task RefreshPasswords()
+    {
+        _passwords = await PasswordStoreRepository.GetAll();
+    }
+
+}

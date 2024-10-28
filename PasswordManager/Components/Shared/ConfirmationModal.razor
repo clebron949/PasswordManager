@@ -1,0 +1,43 @@
+<Modal Title="@Title" ModalId="@ModalId" @ref="_modalRef">
+    <BodyContent>
+        <p class="pb-3">
+            <span class="fw-bold">
+            Are you sure you want to delete this record?
+            </span>
+            <br/>
+            This action cannot be undone.
+        </p>
+        <div class="d-flex align-items-center gap-3 justify-content-end">
+            <button type="button" class="btn btn-dark px-4" @onclick="() => Confirmation(true)">Yes</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => Confirmation(false)">Cancel</button>
+        </div>
+    </BodyContent>
+</Modal>
+
+@code {
+
+    private Modal? _modalRef;
+
+    [Parameter] public string Title { get; set; } = "Delete Confirmation";
+    [Parameter] public string ModalId { get; set; } = "delete-modal";
+    [Parameter] public int Model { get; set; }
+    [Parameter] public EventCallback<int> OnConfirmationCallback { get; set; }
+
+    public async Task ShowModal()
+    {
+        await _modalRef!.ShowModal();
+    }
+
+    public async Task HideModal()
+    {
+        await _modalRef!.HideModal();
+    }
+
+    private async Task Confirmation(bool response)
+    {
+        await HideModal();
+        if(response)
+            await OnConfirmationCallback.InvokeAsync(Model);
+    }
+
+}

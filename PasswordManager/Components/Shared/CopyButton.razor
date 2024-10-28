@@ -1,0 +1,21 @@
+@rendermode InteractiveServer
+@inject  ILogger<CopyButton> Logger
+@inject IJSRuntime JsRuntime
+
+<button class="btn btn-dark btn-sm" type="button" @onclick="CopyToClipboard">Copy</button>
+
+@code {
+    [Parameter] public string? CopyText { get; set; }
+
+    private async Task CopyToClipboard()
+    {
+        if (!string.IsNullOrEmpty(CopyText))
+        {
+           var module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", 
+                "/Components/Shared/CopyButton.razor.js");
+            await module.InvokeVoidAsync("copyTextToClipboard", CopyText);
+            var msg = $"{CopyText} Copied to Clipboard";
+            Logger.LogInformation(msg);
+        }
+    }
+}

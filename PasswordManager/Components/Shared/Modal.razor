@@ -1,0 +1,54 @@
+<div class="modal fade" tabindex="-1" role="dialog" id="@ModalId">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@Title</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-5 px-3">
+                @BodyContent
+            </div>
+            @if (FooterContent != null)
+            {
+                <div class="modal-footer gap-3">
+                    @FooterContent
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+
+    private string _modulePath = @"/Components/Shared/Modal.razor.js";
+
+    [Parameter] public string Title { get; set; } = "Modal Title";
+
+    [Parameter] public RenderFragment? BodyContent { get; set; }
+
+    [Parameter] public RenderFragment? FooterContent { get; set; }
+
+    [Parameter] public string ModalId { get; set; } = "myModal";
+
+    [Inject] private IJSRuntime? JsRuntime { get; set; }
+
+    public async Task ShowModal()
+    {
+        if (JsRuntime == null) return;
+
+        var module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", _modulePath);
+
+        await module.InvokeVoidAsync("Modal.show", ModalId);
+    }
+
+    public async Task HideModal()
+    {
+        if (JsRuntime == null) return;
+
+        var module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", _modulePath);
+
+        await module.InvokeVoidAsync("Modal.hide", ModalId);
+    }
+
+}
