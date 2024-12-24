@@ -5,9 +5,9 @@
 
 <PageTitle>Home</PageTitle>
 
-<h1>Passwords</h1>
+<h1 class="text-3xl font-semibold tracking-tight">Passwords</h1>
 
-<div class="d-flex justify-content-end align-items-center mb-3">
+<div class="d-flex align-items-center">
     <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#Modal1">Add Password</button>
 </div>
 
@@ -34,7 +34,7 @@ else
             @foreach (var model in _passwords)
             {
                 <tr>
-                    <td>
+                    <td class="text-nowrap">
                         @model.Name
                     </td>
                     <td>
