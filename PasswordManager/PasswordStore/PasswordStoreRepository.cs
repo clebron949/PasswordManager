@@ -15,9 +15,16 @@ public class PasswordStoreRepository(string connectionString)
 
     public async Task<PasswordStoreModel?> Get(int id)
     {
-        await using var connection = new MySqlConnection(connectionString);
-        var result = connection.QueryFirst<PasswordStoreModel>(@"SELECT * FROM passwordStore WHERE Id = @id", new { Id = id });
-        return result;
+        try
+        {
+            await using var connection = new MySqlConnection(connectionString);
+            var result = connection.QueryFirst<PasswordStoreModel>(@"SELECT * FROM passwordStore WHERE Id = @id", new { Id = id });
+            return result;
+        }
+        catch
+        {
+            return null;
+        }
     }
     
     public async Task<int> Add(PasswordStoreModel model)

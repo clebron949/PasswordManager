@@ -1,75 +1,52 @@
 ﻿@page "/"
 @rendermode InteractiveServer
-@attribute [StreamRendering]
 @inject PasswordStoreRepository PasswordStoreRepository
 
-<PageTitle>Home</PageTitle>
+<PageTitle>My Passwords</PageTitle>
 
-<h1 class="text-3xl font-semibold tracking-tight">Passwords</h1>
-
-<div class="d-flex align-items-center">
-    <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#Modal1">Add Password</button>
+<div class="flex justify-between items-center">
+    <h1 class="text-3xl font-semibold tracking-tight">Passwords</h1>
+    <NavLink href="/0"
+        class="rounded-md bg-[#2C2CFF] px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+        Add Password
+    </NavLink>
 </div>
 
-@if (!_passwords.Any())
-{
-    <p>
-        <em>Loading...</em>
-    </p>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table">
-            <thead>
-            <tr>
-                <th>Name</th>
-                <th>Username</th>
-                <th>Password</th>
-                <th>Created Date</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            @foreach (var model in _passwords)
-            {
-                <tr>
-                    <td class="text-nowrap">
-                        @model.Name
-                    </td>
-                    <td>
-                        @model.Username
-                    </td>
-                    <td>
-                        @model.Password
-                    </td>
-                    <td class="align-content-center">
-                        @model.CreatedDate.ToShortDateString()
-                    </td>
-                    <td class="align-content-center">
-                        <div class="d-flex align-items-center">
-                            <button type="button" class="btn btn-dark btn-sm px-3 me-3" data-bs-toggle="modal" data-bs-target="#@($"store-modal{model.Id}")">Edit</button>
-                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#@($"delete{model.Id}")">Delete</button>
-                        </div>
-                        <ConfirmationModal ModalId="@($"delete{model.Id}")" Model="model.Id" OnConfirmationCallback="DeletePassword"/>
-                    </td>
-                </tr>
-            }
-            </tbody>
-        </table>
-    </div>
-}
+<div class="grid grid-cols-3 mt-3 mb-6">
+    <input type="text" name="account-number" id="account-number" @oninput="FilterPasswords"
+        class="col-start-1 row-start-1 block w-full rounded-md bg-white py-1.5 pl-3 pr-10 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-[#2C2CFF] sm:pr-9 sm:text-sm/6"
+        placeholder="Search ...">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+        class="pointer-events-none col-start-1 row-start-1 mr-3 size-5 self-center justify-self-end text-gray-400 sm:size-4">
+        <path stroke-linecap="round" stroke-linejoin="round"
+            d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+    </svg>
+</div>
 
-<PasswordModal ModalId="Modal1" Title="Add New Password" Model="_newPassword" OnSave="SavePasswordHandle" @ref="_passwordModalRef"/>
-
-@foreach (var password in _passwords)
+@if (_filteredPasswords.Any())
 {
-    <PasswordModal
-        Title="Edit Password"
-        Model="password"
-        OnSave="SavePasswordHandle"
-        ModalId="@($"store-modal{password.Id}")"
-    />
+    <ul role="list" class="divide-y divide-gray-100 ">
+    @foreach (var model in _filteredPasswords)
+        {
+            <li>
+                <NavLink href="@($"/{model.Id}")"
+                    class="flex items-center gap-x-6 px-3 py-4 cursor-pointer hover:bg-slate-100 hover:rounded-md">
+                    <span class="inline-flex size-7 items-center justify-center rounded-full bg-gray-500">
+                        <span class="text-xs font-medium text-white">@ExtractUppercaseLetters(model.Name)</span>
+                    </span>
+                    <div class="flex justify-between flex-1">
+                        <span class="overflow-hidden">
+                            @model.Name
+                        </span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                             stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/>
+                        </svg>
+                    </div>
+                </NavLink>
+            </li>
+        }
+    </ul>
 }
 
 @code {
@@ -77,51 +54,32 @@ else
     [Inject] public ILogger<Home> Logger { get; set; } = default!;
 
     private IEnumerable<PasswordStoreModel> _passwords = [];
-    private PasswordModal _passwordModalRef = default!;
-    private PasswordStoreModel _newPassword = new();
+    private IEnumerable<PasswordStoreModel> _filteredPasswords = [];
 
     protected override async Task OnInitializedAsync()
     {
-        await RefreshPasswords();
-    }
-
-    private async Task OpenModal()
-    {
-        Logger.LogInformation("Open Modal");
-        await _passwordModalRef!.ShowModal();
-    }
-
-    private async Task EditPassword(PasswordStoreModel model)
-    {
-        _passwordModalRef.UpdateParameter(model, "Edit Password");
-        await _passwordModalRef.ShowModal();
-        StateHasChanged();
-    }
-
-    private async Task SavePasswordHandle(PasswordStoreModel model)
-    {
-        Logger.LogInformation($"Name: {model.Name}; Username: {model.Username}; Password: {model.Password}");
-        if (_passwords.Any(x => x.Id == model.Id))
-        {
-            await PasswordStoreRepository.Update(model);
-        }
-        else
-        {
-            await PasswordStoreRepository.Add(_newPassword);
-            _newPassword = new PasswordStoreModel();
-        }
-        await RefreshPasswords();
-    }
-
-    private async Task DeletePassword(int id)
-    {
-        await PasswordStoreRepository.Delete(id);
-        await RefreshPasswords();
-    }
-    
-    private async Task RefreshPasswords()
-    {
         _passwords = await PasswordStoreRepository.GetAll();
+        _filteredPasswords = _passwords;
     }
 
+    private void FilterPasswords(ChangeEventArgs e)
+    {
+        var searchText = e.Value?.ToString() ?? string.Empty;
+        _filteredPasswords = !string.IsNullOrEmpty(searchText) 
+            ? _passwords.Where(x => x.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)) 
+            : _passwords;
+    }
+
+    private string ExtractUppercaseLetters(string input)
+    {
+        var uppercaseLetters = new StringBuilder();
+        foreach (char c in input)
+        {
+            if (char.IsUpper(c))
+                uppercaseLetters.Append(c);
+        }
+        return uppercaseLetters.Length > 0
+        ? uppercaseLetters.ToString()
+        : $"{input[0]}".ToUpper();
+    }
 }
