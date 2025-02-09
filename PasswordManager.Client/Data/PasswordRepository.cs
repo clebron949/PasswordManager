@@ -42,3 +42,48 @@ public class PasswordRepository : IPasswordRepository
         _passwords.RemoveAll(p => p.Id == id);
     }
 }
+
+public static class MockData
+{
+    public static IPasswordRepository GetMockPasswordRepository()
+    {
+        var repository = new PasswordRepository();
+        repository.AddPassword(
+            new PasswordModel
+            {
+                Id = 1,
+                Name = "Password 1",
+                Username = "user1",
+                Password = "password1",
+                Url = "https://example.com",
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
+            }
+        );
+        repository.AddPassword(
+            new PasswordModel
+            {
+                Id = 2,
+                Name = "Password 2",
+                Username = "user2",
+                Password = "password2",
+                Url = "https://example.com",
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
+            }
+        );
+        repository.AddPassword(
+            new PasswordModel
+            {
+                Id = 3,
+                Name = "Password 3",
+                Username = "user3",
+                Password = "password3",
+                Url = "https://example.com",
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
+            }
+        );
+        return repository;
+    }
+}
