@@ -1,7 +1,7 @@
-using System;
-using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using PasswordManager.Client.Data;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace PasswordManager.Client.ViewModels;
 
@@ -9,12 +9,17 @@ public partial class PasswordTableViewModel : ViewModelBase
 {
     private readonly IPasswordRepository _passwordRepository;
 
-    public ObservableCollection<PasswordModel> Passwords { get; } = [];
+    public ObservableCollection<PasswordItemTableViewModel> Passwords { get; } = [];
 
-    public PasswordTableViewModel()
+    public PasswordTableViewModel(IPasswordRepository passwordRepository)
     {
-        _passwordRepository = MockData.GetMockPasswordRepository();
-        Passwords = new ObservableCollection<PasswordModel>(_passwordRepository.GetPasswords());
+        _passwordRepository = passwordRepository;
+        Passwords =
+        [
+            .. _passwordRepository
+                .GetPasswords()
+                .Select(password => new PasswordItemTableViewModel(password))
+        ];
     }
 
     private void GetPasswords()
@@ -22,7 +27,7 @@ public partial class PasswordTableViewModel : ViewModelBase
         Passwords.Clear();
         foreach (var password in _passwordRepository.GetPasswords())
         {
-            Passwords.Add(password);
+            Passwords.Add(new PasswordItemTableViewModel(password));
         }
     }
 
@@ -30,21 +35,33 @@ public partial class PasswordTableViewModel : ViewModelBase
     private void AddPassword(PasswordModel password)
     {
         _passwordRepository.AddPassword(password);
-        Passwords.Add(password);
+        GetPasswords();
     }
 
     [RelayCommand]
     private void UpdatePassword(PasswordModel password)
     {
         _passwordRepository.UpdatePassword(password);
-        var index = Passwords.IndexOf(password);
-        Passwords[index] = password;
+        GetPasswords();
     }
 
     [RelayCommand]
-    private void DeletePassword(PasswordModel password)
+    private void DeletePassword(int id)
     {
-        _passwordRepository.DeletePassword(password.Id);
-        Passwords.Remove(password);
+        _passwordRepository.DeletePassword(id);
+        GetPasswords();
+    }
+}
+
+public partial class PasswordItemTableViewModel : ViewModelBase
+{
+    public PasswordModel? Password { get; }
+
+    public string HiddenPassword { get; }
+
+    public PasswordItemTableViewModel(PasswordModel? password)
+    {
+        Password = password;
+        HiddenPassword = new('*', Password?.Password.Length ?? 0);
     }
 }
