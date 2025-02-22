@@ -1,14 +1,14 @@
-import { Password as PasswordType } from "../components/models/password";
+import { Password as PasswordType } from "../models/password";
 
 export class PasswordService {
   async getPasswords() {
     const response = await fetch("/api/passwords");
-    return (await response.json()) as PasswordType[];
+    return response.ok ? (await response.json()) as PasswordType[] : [];
   }
 
   async getPassword(id: number) {
     const response = await fetch(`/api/passwords/${id}`);
-    return (await response.json()) as PasswordType;
+    return response.ok ? (await response.json()) as PasswordType : null;
   }
 
   async createPassword(password: PasswordType) {
