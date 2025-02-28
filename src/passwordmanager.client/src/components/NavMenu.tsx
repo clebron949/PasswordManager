@@ -1,5 +1,6 @@
 import { NavLink } from "react-router";
 import PassboltIcon from "@/assets/passbolt.svg";
+import HamburgerIcon from "./icons/HamburgerIcon";
 
 const DefaultLinkStyle =
   "rounded-md bg-[#2C2CFF] px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600";
@@ -26,24 +27,20 @@ const NavMenu = () => {
           aria-expanded="false"
         >
           <span className="sr-only">Open main menu</span>
-          <svg
-            className="w-5 h-5"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 17 14"
-          >
-            <path
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M1 1h15M1 7h15M1 13h15"
-            />
-          </svg>
+          <HamburgerIcon className="size-6" />
         </button>
         <div className="w-full md:block md:w-auto" id="navbar-default">
           <ul className="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+            <li>
+              <NavLink
+                to="/password-generator"
+                className={({ isActive }) =>
+                  isActive ? ActiveLinkStyle : DefaultLinkStyle
+                }
+              >
+                Password Generator
+              </NavLink>
+            </li>
             <li>
               <NavLink
                 to="/about"

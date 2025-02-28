@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { NavLink } from "react-router";
 import { Password } from "../models/password";
 import { PasswordService } from "../services/password";
-
+import SearchIcon from "../components/icons/SearchIcon";
+import ChevronRightIcon from "../components/icons/ChevronRigthIcon";
 const Home = () => {
   const [passwords, setPasswords] = useState<Password[]>([]);
   const passwordService = new PasswordService();
@@ -35,20 +36,7 @@ const Home = () => {
           className="col-start-1 row-start-1 block w-full rounded-md bg-white py-1.5 pl-3 pr-10 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-[#2C2CFF] sm:pr-9 sm:text-sm/6"
           placeholder="Search ..."
         />
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth="1.5"
-          stroke="currentColor"
-          className="pointer-events-none col-start-1 row-start-1 mr-3 size-5 self-center justify-self-end text-gray-400 sm:size-4"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-          />
-        </svg>
+        <SearchIcon className="pointer-events-none col-start-1 row-start-1 mr-3 size-5 self-center justify-self-end text-gray-400 sm:size-4" />
       </div>
 
       <ul role="list" className="divide-y divide-gray-100">
@@ -66,20 +54,7 @@ const Home = () => {
               </span>
               <div className="flex justify-between flex-1">
                 <span className="overflow-hidden">{password.name}</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  className="size-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="m8.25 4.5 7.5 7.5-7.5 7.5"
-                  />
-                </svg>
+                <ChevronRightIcon className="size-6" />
               </div>
             </NavLink>
           </li>
